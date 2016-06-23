@@ -96,4 +96,24 @@ public class BooleanInt
 	{
 		return new BooleanInt(this.intValue() + n.intValue());
 	}
+	
+	/**
+	 * Returns a BooleanInt whose values is <code>this - n</code>
+	 * @param n the value to be subtracted
+	 * @return <code>this - n</code>
+	 */
+	public BooleanInt subtract(int n)
+	{
+		return new BooleanInt(this.intValue() - n);
+	}
+	
+	/**
+	 * Returns a BooleanInt whose value is <code>this - n</code>
+	 * @param n the BooleanInt to be subtracted
+	 * @return <code>this - n</code>
+	 */
+	public BooleanInt subtract(BooleanInt n)
+	{
+		return new BooleanInt(this.intValue() - n.intValue());
+	}
 }
