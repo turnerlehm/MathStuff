@@ -42,7 +42,24 @@ public class BooleanInt
 	{
 		bits = new boolean[32];
 		for(int i = 31; i >= 0; i--)
-			bits[i] = (n & (1 << i)) != 0;
+			bits[bits.length - i - 1] = (n & (1 << i)) != 0;
+	}
+	
+	/**
+	 * Returns the base-2 (binary) representation of <code>this</code>
+	 * @return the base-2 representation of <code>this</code>
+	 */
+	@Override
+	public String toString()
+	{
+		String s = "";
+		for(int i = 0; i < 32; i++)
+		{
+			s += bits[i] ? 1 : 0;
+			if(i != 0 && (i + 1) % 4 == 0)
+				s += " ";
+		}
+		return s;
 	}
 	
 	/**
@@ -53,7 +70,7 @@ public class BooleanInt
 	{
 		int n = 0;
 		for(boolean b : bits)
-			n = (n << 1) | (b ? 1 : 0);
+			n = (n << 1) + (b ? 1 : 0);
 		return n;
 	}
 	
@@ -115,5 +132,13 @@ public class BooleanInt
 	public BooleanInt subtract(BooleanInt n)
 	{
 		return new BooleanInt(this.intValue() - n.intValue());
+	}
+	/*
+	 * Sanity check
+	 */
+	public static void main(String... args)
+	{
+		BooleanInt five = new BooleanInt(3);
+		System.out.println(five.multiply(3).toString());
 	}
 }
