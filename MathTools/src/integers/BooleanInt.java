@@ -133,6 +133,33 @@ public class BooleanInt
 	{
 		return new BooleanInt(this.intValue() - n.intValue());
 	}
+	
+	/**
+	 * Returns a BooleanInt whose value is <code>this / n</code>
+	 * @param n the value to be divided by
+	 * @return <code>this / n</code>
+	 * @throws ArithmeticException if <code>n == 0</code>
+	 */
+	public BooleanInt divide(int n)throws ArithmeticException
+	{
+		if(n == 0)
+			throw new ArithmeticException("division by zero");
+		return new BooleanInt(this.intValue() / n);
+	}
+	
+	/**
+	 * Returns a BooleanInt whose value is <code>this / n</code>
+	 * @param n the BooleanInt to be divided by
+	 * @return <code>this / n</code>
+	 * @throws ArithmeticException if <code>n == 0</code>
+	 */
+	public BooleanInt divide(BooleanInt n)throws ArithmeticException
+	{
+		if(n.intValue() == 0)
+			throw new ArithmeticException("division by zero");
+		return new BooleanInt(this.intValue() / n.intValue());
+	}
+	
 	/*
 	 * Sanity check
 	 */
