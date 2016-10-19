@@ -49,7 +49,7 @@ public class ConcatPrimesGeneral {
 				//out.write("Length: " + S[0].length() + "\tk = " + S[1] + "\tN mod p = " + N.mod(new BigInteger("" + p)));
 				//out.flush();
 				out.newLine();
-				System.out.print("p = " + i + ": " + N + "\t");
+				System.out.println("p = " + i + ": " + N + "\t");
 				//System.out.print("Length: " + S[0].length() + "\tk = " + S[1] + "\tN mod p = " + N.mod(new BigInteger("" + p)) + "\n");
 			}
 		}
