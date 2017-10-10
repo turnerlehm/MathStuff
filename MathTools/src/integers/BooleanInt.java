@@ -165,7 +165,7 @@ public class BooleanInt
 	 */
 	public static void main(String... args)
 	{
-		BooleanInt five = new BooleanInt(3);
+		BooleanInt five = new BooleanInt(5);
 		System.out.println(five.multiply(3).toString());
 	}
 }
