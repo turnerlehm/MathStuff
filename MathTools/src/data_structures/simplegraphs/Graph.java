@@ -12,6 +12,12 @@ public abstract class Graph<E>
     protected int numNodes;
     protected int numEdges;
 
+    public Graph()
+    {
+        adjacency = new HashMap<Node, HashSet<Edge>>();
+        nodes = new HashMap<Integer,Node>();
+    }
+
     //add an unlabeled node
     public Node addNode(int key)
     {
@@ -136,7 +142,7 @@ public abstract class Graph<E>
         public String toString()
         {
             if(data != null)
-                return "[" + key + "]:" + data; //if the node is labeled/typed, append label/type to key
+                return "[" + key + "," + data + "]"; //if the node is labeled/typed, append label/type to key
             else
                 return "" + key;
         }

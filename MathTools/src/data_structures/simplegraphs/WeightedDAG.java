@@ -42,4 +42,19 @@ public class WeightedDAG<E> extends DirectedAcyclicGraph<E>
         numEdges++;
         removeCycle(from, e);
     }
+
+   /*sanity check
+    public static void main(String... args)
+    {
+        WeightedDAG<String> G = new WeightedDAG<String>();
+        G.addNode("A",0);
+        G.addNode("B",1);
+        G.addNode("C",2);
+        G.addNode("D",3);
+        G.addEdge(0,1,1);
+        G.addEdge(1,2,2);
+        G.addEdge(2,3,3);
+        G.addEdge(3,0,1);
+        System.out.println(G);
+    }*/
 }

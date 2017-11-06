@@ -17,10 +17,7 @@ public class SimpleGraph<E> extends Graph<E>
             t = addNode(to);
         if(hasEdge(f,t))
             return;
-        Edge e = new Edge(f,t);
-        adjacentTo(f).add(e);
-        adjacentTo(t).add(e);
-        numEdges++;
+        addEdge(f,t);
     }
 
     @Override
@@ -36,7 +33,21 @@ public class SimpleGraph<E> extends Graph<E>
             return;
         Edge e = new Edge(from,to);
         adjacentTo(from).add(e);
-        adjacentTo(to).add(e);
         numEdges++;
     }
+
+    /*sanity check
+    public static void main(String... args)
+    {
+        Graph<String> G = new SimpleGraph<String>();
+        G.addNode("A",0);
+        G.addNode("B",1);
+        G.addNode("C",2);
+        G.addNode("D",3);
+        G.addEdge(0,1);
+        G.addEdge(2,3);
+        G.addEdge(1,3);
+        G.addEdge(3,0);
+        System.out.println(G);
+    }*/
 }
