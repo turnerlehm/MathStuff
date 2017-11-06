@@ -1,18 +1,16 @@
 package data_structures.simplegraphs;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.TreeSet;
 
 public abstract class Graph<E>
 {
-    private int V;
-    private int E;
     private HashMap<Node, HashSet<Edge>> adjacency;
     private HashMap<Integer, Node> nodes;
-    private final HashSet<Node> EMPTY = new HashSet<Node>();
-    private int numNodes;
-    private int numEdges;
+    private final HashSet<Edge> EMPTY = new HashSet<Edge>();
+    protected int numNodes;
+    protected int numEdges;
 
     //add an unlabeled node
     public Node addNode(int key)
@@ -20,7 +18,7 @@ public abstract class Graph<E>
         Node n = nodes.get(key);
         if(n == null)
         {
-            n = new Node(null, numNodes);
+            n = new Node(null, numNodes, key);
             nodes.put(key, n);
             adjacency.put(n, new HashSet<Edge>());
             numNodes++;
@@ -34,7 +32,7 @@ public abstract class Graph<E>
         Node n = nodes.get(key);
         if(n == null)
         {
-            n = new Node(label, numNodes);
+            n = new Node(label, numNodes, key);
             nodes.put(key, n);
             adjacency.put(n, new HashSet<Edge>());
             numNodes++;
@@ -42,14 +40,95 @@ public abstract class Graph<E>
         return n;
     }
 
+    public void addNode(Node n)
+    {
+        if(n == null)
+            return;
+        else if(hasNode(n))
+            return;
+        else
+        {
+            nodes.put(n.key, n);
+            adjacency.put(n, new HashSet<Edge>());
+            numNodes++;
+        }
+    }
+
+    public Node getNode(int node)
+    {
+        return nodes.get(node);
+    }
+
+    public boolean hasNode(int node)
+    {
+        return nodes.containsKey(node);
+    }
+
+    public boolean hasNode(Node n)
+    {
+        return nodes.values().contains(n);
+    }
+
+    public boolean hasEdge(Node from, Node to)
+    {
+        if(from == null || to == null)
+            return false;
+        for(Edge e : adjacency.get(from))
+            if(e.to.equals(to))
+                return true;
+        return false;
+    }
+
+    public abstract void addEdge(int from, int to);
+
+    public abstract void addEdge(Node from, Node to);
+
+    public HashSet<Edge> adjacentTo(int node)
+    {
+        return !hasNode(node) ? EMPTY : adjacency.get(getNode(node));
+    }
+
+    public HashSet<Edge> adjacentTo(Node n)
+    {
+        return !adjacency.containsKey(n) ? EMPTY : adjacency.get(n);
+    }
+
+    public Collection<Node> getNodes()
+    {
+        return nodes.values();
+    }
+
+    public String toString()
+    {
+        String s = "";
+        for(Node n : getNodes())
+        {
+            s += n + ": ";
+            for(Edge e : adjacentTo(n))
+                s += e + " ";
+            s += "\n";
+        }
+        return s;
+    }
+
     protected class Node
     {
         E data;
         int num;
-        public Node(E data, int n)
+        int key;
+        public Node(E data, int n, int k)
         {
             this.data = data;
             this.num = n;
+            this.key = k;
+        }
+
+        public String toString()
+        {
+            if(data != null)
+                return "[" + key + "]:" + data; //if the node is labeled/typed, append label/type to key
+            else
+                return "" + key;
         }
     }
 
@@ -74,6 +153,14 @@ public abstract class Graph<E>
             this.from = from;
             this.to = to;
             this.weight = weight;
+        }
+
+        public String toString()
+        {
+            if(weight != 0)
+                return "(" + to + "," + weight + ")";
+            else
+                return to.toString();
         }
     }
 }
