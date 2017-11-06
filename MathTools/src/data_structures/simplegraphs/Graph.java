@@ -64,6 +64,16 @@ public abstract class Graph<E>
         return nodes.containsKey(node);
     }
 
+    public void removeNode(int node)
+    {
+        nodes.remove(node);
+    }
+
+    public void removeNode(Node n)
+    {
+        nodes.values().remove(n);
+    }
+
     public boolean hasNode(Node n)
     {
         return nodes.values().contains(n);
