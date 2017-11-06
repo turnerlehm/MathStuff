@@ -45,43 +45,7 @@ public class BigLinkedList<E> implements Iterable<E>
 	public void add(int index, E e)
 	{
 		BigInteger idx = new BigInteger("" + index);
-		if(idx.compareTo(BigInteger.ZERO) < 0 || idx.compareTo(size) >= 0)
-			throw new IndexOutOfBoundsException("" + idx);
-		else
-		{
-			//closer to the head of the list
-			if(BigInteger.ZERO.subtract(idx).abs().compareTo(size.subtract(idx)) < 0)
-			{
-				Node cur = head.next;
-				BigInteger i = BigInteger.ZERO;
-				while(!i.equals(idx))
-				{
-					cur = cur.next;
-					i = i.add(BigInteger.ONE);
-				}
-				Node N = new Node(e);
-				N.next = cur;
-				N.prev = cur.prev;
-				cur.prev.next = N;
-				cur.prev = N;
-			}
-			else//closer to the tail of the list
-			{
-				Node cur = tail.prev;
-				BigInteger i = size.subtract(BigInteger.ONE);
-				while(!i.equals(idx))
-				{
-					cur = cur.prev;
-					i = i.subtract(BigInteger.ONE);
-				}
-				Node N = new Node(e);
-				N.next = cur;
-				N.prev = cur.prev;
-				cur.prev.next = N;
-				cur.prev = N;
-			}
-			size = size.add(BigInteger.ONE);
-		}
+		add(idx,e);
 	}
 	
 	public void add(BigInteger index, E e)
