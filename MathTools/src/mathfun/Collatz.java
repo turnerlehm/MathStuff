@@ -1,6 +1,11 @@
 package mathfun;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.math.BigInteger;
+import java.security.SecureRandom;
+import java.util.Random;
 
 public class Collatz {
 	private static final BigInteger THREE = new BigInteger("3");
@@ -11,25 +16,37 @@ public class Collatz {
 		// TODO Auto-generated constructor stub
 	}
 
-	private static void collatz(BigInteger n)
+	private static void collatz(BigInteger n)throws IOException
 	{
+		BufferedWriter out = new BufferedWriter(new FileWriter("D:\\Projects\\COMPUTATIONS\\collatz_RAND_PRIME_8192.txt"));
 		long steps = 1;
+		long start = System.currentTimeMillis();
 		while(n.compareTo(ONE) > 0)
 		{
 			if(n.and(ONE).compareTo(ZERO) != 0)
 				n = n.multiply(THREE).add(ONE);
 			else
 				n = n.divide(TWO);
+			out.write(steps + ": " + n);
+			out.newLine();
+			out.flush();
 			System.out.println(steps + ": " + n);
 			steps++;
 		}
+		long stop = System.currentTimeMillis();
 		System.out.print("# Steps: " + steps + "\n");
+		out.write("# Steps: " + steps);
+		out.newLine();
+		out.flush();
+		System.out.print("Time (ms): " + (stop - start));
+		out.write("Time (ms): " + (stop - start));
+		out.flush();
+		out.close();
 	}
 	
-	public static void main(String... args)
+	public static void main(String... args)throws IOException
 	{
-		long start = System.currentTimeMillis();
-		collatz(new BigInteger("987686543244323545698754654356457687989765453421234657897088978656434214236456879786576453424346564534234678697657654323465859087565432256786535863342134579886561233479456512354579855452355647856321354115474552568774563213321459879987984561231232323121478545111115387782376435786356519892398749872837634759876129634994081298734209782987087099734597897657861239138794567899872634907"));
-		System.out.print("Time (ms): " + (System.currentTimeMillis() - start));
+		Random rng = new SecureRandom();
+		collatz(new BigInteger(8192, 10000, rng));
 	}
 }

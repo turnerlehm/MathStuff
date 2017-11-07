@@ -27,7 +27,7 @@ public class Base2Concatenation {
 	private static void concatenate_int()throws IOException
 	{
 		BigInteger N_2 = null;
-		BufferedWriter out = new BufferedWriter(new FileWriter(".\\numbers_base-2_concatention_Integer.MAX_VALUE.txt"));
+		BufferedWriter out = new BufferedWriter(new FileWriter("D:\\Projects\\COMPUTATIONS\\numbers_base-2_concatention_Integer.MAX_VALUE.txt"));
 		for(int n = 1; n < Integer.MAX_VALUE; n++)
 		{
 			N_2 = new BigInteger(translate(n));
@@ -52,7 +52,7 @@ public class Base2Concatenation {
 	private static void concatenate_long()throws IOException
 	{
 		BigInteger N_2 = null;
-		BufferedWriter out = new BufferedWriter(new FileWriter(".\\numbers_base-2_concatention_Long.MAX_VALUE.txt"));
+		BufferedWriter out = new BufferedWriter(new FileWriter("D:\\Projects\\COMPUTATIONS\\numbers_base-2_concatention_Long.MAX_VALUE.txt"));
 		for(long n = 1; n < Long.MAX_VALUE; n++)
 		{
 			System.out.println("n = " + n + ": " + N_2);

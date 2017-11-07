@@ -36,22 +36,20 @@ public class ConcatenationPrimesExt {
 	
 	private static void findPrimes() throws IOException
 	{
-		int[] primes = generateSieve(100000000);
-		BufferedWriter out = new BufferedWriter(new FileWriter("C:\\Users\\Turner\\Desktop\\Computation_Results\\concat_primes_ext_100000000.txt"));
+		int[] primes = generateSieve(1000000000);
+		BufferedWriter out = new BufferedWriter(new FileWriter("D:\\Projects\\COMPUTATIONS\\PMODN_PRIME_1000000000.txt"));
 		BigInteger N = BigInteger.ZERO;
 		for(int p : primes)
 		{
 			String[] S = translate(p);
 			N = new BigInteger(S[0]);
-			if(N.isProbablePrime(100000000))
+			BigInteger mod;
+			if(N.isProbablePrime(100000000) && (mod = N.mod(new BigInteger("" + p))).isProbablePrime(100000000))
 			{
-				out.write("p = " + p + ": " + N + "\t");
-				out.flush();
-				out.write("Length: " + S[0].length() + "\tk = " + S[1] + "\tN mod p = " + N.mod(new BigInteger("" + p)));
-				out.flush();
+				out.write("p = " + p + ": " + "N mod p = " + mod);
 				out.newLine();
-				System.out.print("p = " + p + ": " + N + "\t");
-				System.out.print("Length: " + S[0].length() + "\tk = " + S[1] + "\tN mod p = " + N.mod(new BigInteger("" + p)) + "\n");
+				out.flush();
+				System.out.println("p = " + p + ": " + "N mod p = " + mod);
 			}
 		}
 		out.close();

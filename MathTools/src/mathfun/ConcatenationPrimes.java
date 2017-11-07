@@ -37,7 +37,7 @@ public class ConcatenationPrimes {
 	private static void findPrimes() throws IOException
 	{
 		int[] primes = generateSieve(100000000);
-		BufferedWriter out = new BufferedWriter(new FileWriter("C:\\Users\\Turner\\Desktop\\Computation_Results\\concat_primes_100000000.txt"));
+		BufferedWriter out = new BufferedWriter(new FileWriter("D:\\Projects\\COMPUTATIONS\\concat_primes_100000000.txt"));
 		BigInteger N = BigInteger.ZERO;
 		for(int p : primes)
 		{
