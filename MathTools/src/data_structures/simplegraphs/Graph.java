@@ -1,14 +1,13 @@
 package data_structures.simplegraphs;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 
 public abstract class Graph<E>
 {
     private HashMap<Node, HashSet<Edge>> adjacency;
     private HashMap<Integer, Node> nodes;
     private final HashSet<Edge> EMPTY = new HashSet<Edge>();
+    private ArrayList<Node> paths;
     protected int numNodes;
     protected int numEdges;
 
@@ -112,6 +111,94 @@ public abstract class Graph<E>
     public Collection<Node> getNodes()
     {
         return nodes.values();
+    }
+
+    public int[] shortestPaths(int source)
+    {
+        Hashtable<Node, Node> Q = new Hashtable<Node, Node>();
+        int[] dist = new int[nodes.size()];
+        paths = new ArrayList<Node>(numNodes);
+        for(Node n : nodes.values())
+        {
+            dist[n.key] = Integer.MAX_VALUE / Integer.SIZE;
+            Q.put(n,n);
+        }
+        while(!Q.isEmpty())
+        {
+            Node u = getNode(minDistance(dist));
+            Q.remove(u);
+            for(Edge e : adjacentTo(u))
+            {
+                int alt = dist[u.key] + e.weight;
+                if (alt < dist[e.to.key])
+                {
+                    dist[e.to.key] = alt;
+                    paths.add(e.to.key, u);
+                }
+            }
+        }
+        return dist;
+    }
+
+    public Stack<Node> shortestPath(int from, int to)
+    {
+        Hashtable<Node, Node> Q = new Hashtable<Node, Node>();
+        int[] dist = new int[nodes.size()];
+        paths = new ArrayList<Node>(numNodes);
+        Stack<Node> path;
+        for(Node n : nodes.values())
+        {
+            dist[n.key] = Integer.MAX_VALUE / Integer.SIZE;
+            Q.put(n,n);
+        }
+        while(!Q.isEmpty())
+        {
+            Node u = getNode(minDistance(dist));
+            Q.remove(u);
+            if(u.key == to)
+            {
+                path = new Stack<Node>();
+                while(paths.contains(u))
+                {
+                    path.push(u);
+                    u = paths.remove(paths.indexOf(u));
+                }
+                path.push(nodes.get(from));
+                return path;
+            }
+            for(Edge e : adjacentTo(u))
+            {
+                int alt = dist[u.key] + e.weight;
+                if (alt < dist[e.to.key])
+                {
+                    dist[e.to.key] = alt;
+                    paths.add(e.to.key, u);
+                }
+            }
+        }
+        return null;
+    }
+
+    public ArrayList<Node> getShortestPaths(int source)
+    {
+        shortestPaths(source);
+        return paths;
+    }
+
+    private int minDistance(int[] dist)
+    {
+        int i;
+        int min = dist[0];
+        int idx = 0;
+        for(i = 0; i < dist.length; i++)
+        {
+            if (dist[i] < min)
+            {
+                min = dist[i];
+                idx = i;
+            }
+        }
+        return idx;
     }
 
     public String toString()

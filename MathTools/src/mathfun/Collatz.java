@@ -18,7 +18,7 @@ public class Collatz {
 
 	private static void collatz(BigInteger n)throws IOException
 	{
-		BufferedWriter out = new BufferedWriter(new FileWriter("D:\\Projects\\COMPUTATIONS\\collatz_RAND_PRIME_8192.txt"));
+		BufferedWriter out = new BufferedWriter(new FileWriter("D:\\Projects\\COMPUTATIONS\\collatz_RAND_PRIME_PSEQ_8192.txt"));
 		long steps = 1;
 		long start = System.currentTimeMillis();
 		while(n.compareTo(ONE) > 0)
@@ -27,15 +27,18 @@ public class Collatz {
 				n = n.multiply(THREE).add(ONE);
 			else
 				n = n.divide(TWO);
-			out.write(steps + ": " + n);
-			out.newLine();
-			out.flush();
-			System.out.println(steps + ": " + n);
-			steps++;
+			if(n.isProbablePrime(1000000))
+			{
+				out.write(steps + ": " + n);
+				out.newLine();
+				out.flush();
+				System.out.println(steps + ": " + n);
+				steps++;
+			}
 		}
 		long stop = System.currentTimeMillis();
-		System.out.print("# Steps: " + steps + "\n");
-		out.write("# Steps: " + steps);
+		System.out.print("Primes in sequence: " + steps + "\n");
+		out.write("Primes in sequence: " + steps);
 		out.newLine();
 		out.flush();
 		System.out.print("Time (ms): " + (stop - start));
