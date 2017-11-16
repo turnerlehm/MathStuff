@@ -15,66 +15,110 @@ public class HexToBase64
         for(byte b : ENCODING)
             System.out.println((char)b);
         HexToBase64 encoder = new HexToBase64();
-        System.out.println(encoder.cheatEncode("49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d"));
-        boolean match = encoder.cheatEncode("49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d").equals("SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t");
+        System.out.println(encoder.encode(new BigInteger("49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d", 16).toByteArray()));
+        boolean match = encoder.encode(new BigInteger("49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d", 16).toByteArray()).equals("SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t");
         System.out.println("matches: " + match);
     }
 
-    //parts of implementation borrowed from https://rosettacode.org/wiki/Base64_encode_data
-    public String toBase64(String hex)
+    /**
+     * From the OpenJDK 9 implementation of Base64
+     * @param src
+     * @return
+     */
+    @SuppressWarnings("deprecation")
+    public String encode2(byte[] src)
     {
-        byte[] hexbytes = hex.getBytes();
-        StringBuilder sb = new StringBuilder();
-        int blocks = 0;
-        for(int i = hexbytes.length - 1; i >= 3; i -= 3)
+        int len = 4 * ((src.length + 2) / 3);
+        byte[] dst = new byte[len];
+        int sp = 0;
+        int slen = src.length / 3 * 3;
+        int sl = slen;
+        int dp = 0;
+        while(sp < sl)
         {
-            int b1 = hexbytes[i];
-            int b2 = hexbytes[i-1];
-            int b3 = hexbytes[i-2];
-            if(b1 == -1)
-                break;
-            int block = (b1 & 0xff) << 16 | (b2 & 0xff) << 8 | (b3 & 0xff);
-            sb.append((char)ENCODING[block >> 18 & 63]); //get first 6 bits from 3 byte block
-            sb.append((char)ENCODING[block >> 12 & 63]); //get next 6 bits from 3 byte block
-            if(b2 == -1)
-                sb.append('='); //pad is no more input, otherwise append next 6 bits from block
-            else
-                sb.append((char)ENCODING[block >> 6 & 63]);
-            if(b3 == -1)
-                sb.append('='); //pad if nor more input, otherwise append last 6 bits from block
-            else
-                sb.append((char)ENCODING[block & 63]);
+            int s10 = Math.min(sp+slen, sl);
+            for(int sp0 = sp, dp0 = dp; sp0 < s10;)
+            {
+                int bits = (src[sp0++] & 0xff) << 16 | (src[sp0++] & 0xff) << 8 | (src[sp0++] & 0xff);
+                dst[dp0++] = ENCODING[(bits >>> 18) & 0x3f];
+                dst[dp0++] = ENCODING[(bits >>> 12) & 0x3f];
+                dst[dp0++] = ENCODING[(bits >>> 6) & 0x3f];
+                dst[dp0++] = ENCODING[bits & 0x3f];
+            }
+            int dlen = (s10 - sp) / 3 * 4;
+            dp += dlen;
+            sp = s10;
         }
-        return sb.toString();
+        if(sp < src.length)
+        {
+            int b0 = src[sp++] & 0xff;
+            dst[dp++] = ENCODING[b0 >> 2];
+            if(sp == src.length)
+            {
+                dst[dp++] = ENCODING[(b0 << 4) & 0x3f];
+                dst[dp++] = '=';
+                dst[dp++] = '=';
+            }
+            else
+            {
+                int b1 = src[sp++] & 0xff;
+                dst[dp++] = ENCODING[(b0 << 4) & 0x3f | (b1 >> 4)];
+                dst[dp++] = ENCODING[(b1 << 2) & 0x3f];
+                dst[dp++] = '=';
+            }
+        }
+        return new String(dst,0,0,dst.length);
     }
 
-    //implementation borrowed from https://gist.github.com/EmilHernvall/953733
-    public String hexToBase64(String hex)
+    /**
+     * Based on the OpenJDK 9 implementation, but modified specifically for only RFC4648 encoding
+     * @param src
+     * @return
+     */
+    @SuppressWarnings("deprecation")
+    public String encode(byte[] src)
     {
-        byte[] data = hex.getBytes();
-        StringBuilder sb = new StringBuilder();
+        int len = 4 * ((src.length + 2) / 3);
+        byte[] dst = new byte[len];
+        int slen = src.length;
+        int i;
+        int j;
         int pad = 0;
-        for(int i = 0; i < data.length; i += 3)
+        for(i = 0, j = 0; i < slen; i += 3)
         {
-            int b = ((data[i] & 0xff) << 16) & 0xffffff;
-            if(i + 1 < data.length)
-                b |= (data[i+1] & 0xff) << 8;
+            int block = (src[i] & 0xff) << 16;
+            if(i + 1 < slen)
+                block |= (src[i+1] & 0xff) << 8;
             else
                 pad++;
-            if(i + 2 < data.length)
-                b |= (data[i+2] & 0xff);
+            if(i + 2 < slen)
+                block |= (src[i+2] & 0xff);
             else
                 pad++;
-            for(int j = 0; j < 4 - pad; j++)
-            {
-                int c = (b & 0xfc0000) >> 18;
-                sb.append((char)ENCODING[c]);
-                b <<= 6;
-            }
-            for(int j = 0; j < pad; j++)
-                sb.append('=');
+            dst[j++] = ENCODING[(block >>> 18) & 0x3f];
+            dst[j++] = ENCODING[(block >>> 12) & 0x3f];
+            dst[j++] = ENCODING[(block >>> 6) & 0x3f];
+            dst[j++] = ENCODING[block & 0x3f];
         }
-        return sb.toString();
+        if(pad > 0) // 1 or 2 leftover bytes
+        {
+            int b0 = src[i++] & 0xff;
+            dst[j++] = ENCODING[b0 >> 2];
+            if(pad == 2)
+            {
+                dst[j++] = ENCODING[(b0 << 4) & 0x3f];
+                dst[j++] = '=';
+                dst[j++] = '=';
+            }
+            else
+            {
+                int b1 = src[i++] & 0xff;
+                dst[j++] = ENCODING[(b0 << 4) & 0x3f | (b1 >> 4)];
+                dst[j++] = ENCODING[(b1 << 2) & 0x3f];
+                dst[j++] = '=';
+            }
+        }
+        return new String(dst,0,0,dst.length);
     }
 
     public byte[] fromBase64(String b64)
