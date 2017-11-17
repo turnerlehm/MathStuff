@@ -121,6 +121,17 @@ public class HexToBase64
         return new String(dst,0,0,dst.length);
     }
 
+    public String hexEncode(byte[] src)
+    {
+        StringBuilder sb = new StringBuilder();
+        for(int i = 0; i < src.length; i++)
+        {
+            sb.append(Character.forDigit((src[i] & 0xF) >> 4, 16));
+            sb.append(Character.forDigit(src[i] & 0xF, 16));
+        }
+        return sb.toString();
+    }
+
     public byte[] fromBase64(String b64)
     {
         return null;

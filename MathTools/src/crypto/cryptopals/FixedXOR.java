@@ -22,13 +22,8 @@ public class FixedXOR
         byte[] res = new byte[len];
         for(int i = 0; i < len; i++)
             res[i] = (byte)(b1[i % b1.length] ^ b2[i % b2.length]);
-        StringBuilder sb = new StringBuilder();
-        for(int i = 0; i < len; i++)
-        {
-            sb.append(Character.forDigit((res[i] >> 4) & 0xF, 16));
-            sb.append(Character.forDigit(res[i] & 0xF, 16));
-        }
-        return sb.toString();
+        HexToBase64 encoder = new HexToBase64();
+        return encoder.hexEncode(res);
     }
 
     public static void main(String[] args)
