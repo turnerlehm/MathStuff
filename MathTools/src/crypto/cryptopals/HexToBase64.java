@@ -121,7 +121,7 @@ public class HexToBase64
         return new String(dst,0,0,dst.length);
     }
 
-    public String hexEncode(byte[] src)
+    public String hexEncode2(byte[] src)
     {
         StringBuilder sb = new StringBuilder();
         for(int i = 0; i < src.length; i++)
@@ -130,6 +130,25 @@ public class HexToBase64
             sb.append(Character.forDigit(src[i] & 0xF, 16));
         }
         return sb.toString();
+    }
+
+    public String hexEncode(byte[] src)
+    {
+        BigInteger temp = new BigInteger(src);
+        return temp.toString(16);
+    }
+
+    public byte[] hexDecode(String hex)
+    {
+        return new BigInteger(hex,16).toByteArray();
+    }
+
+    public byte[] hexDecode2(String hex)
+    {
+        byte[] bytes = new byte[hex.length() / 2];
+        for(int i = 0; i < hex.length() - 1; i += 2)
+            bytes[i / 2] = (byte)((Character.digit(hex.charAt(i),16) << 4) + Character.digit(hex.charAt(i + 1),16));
+        return bytes;
     }
 
     public byte[] fromBase64(String b64)

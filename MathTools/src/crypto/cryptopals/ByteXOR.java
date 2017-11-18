@@ -6,10 +6,10 @@ public class ByteXOR
 {
     public String xor(byte b, String s1)
     {
-        byte[] bytes = new BigInteger(s1,16).toByteArray();
+        HexToBase64 encoder = new HexToBase64();
+        byte[] bytes = encoder.hexDecode(s1);
         for(int i = 0; i < bytes.length; i++)
             bytes[i] ^= b;
-        HexToBase64 encoder = new HexToBase64();
         return encoder.hexEncode(bytes);
     }
 }
