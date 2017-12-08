@@ -1,4 +1,4 @@
-package logic;
+package gentzen;
 
 public abstract class Gate
 {
