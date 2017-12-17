@@ -1,7 +1,9 @@
 package crypto.cryptopals;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
+import java.util.*;
 
 public class Challenge6
 {
@@ -22,12 +24,17 @@ public class Challenge6
         return count;
     }
 
-    public static void main(String[] args) throws UnsupportedEncodingException
-    {
+    public static void main(String[] args) throws UnsupportedEncodingException, FileNotFoundException {
         HexToBase64 encoder = new HexToBase64();
         System.out.println(convertToBits("this is a test"));
         System.out.println(convertToBits("wokka wokka!!!"));
         System.out.println(hammingDistance(convertToBits("this is a test"),convertToBits("wokka wokka!!!")));
+        Scanner fin = new Scanner(new File("D:\\Projects\\COMPUTATIONS\\6.txt"));
+        String b64 = "";
+        while(fin.hasNext())
+            b64 += fin.nextLine();
+        byte[] b = encoder.decode(b64);
+        decipher(b);
     }
 
     public static String convertToBits(String s)
@@ -59,9 +66,11 @@ public class Challenge6
         return sb.toString();
     }
 
-    public void decipher(byte[] bytes) throws UnsupportedEncodingException {
+    public static void decipher(byte[] bytes) throws UnsupportedEncodingException {
         double min = Double.MAX_VALUE;
-        ArrayList<Integer> keys = new ArrayList<Integer>();
+        //ArrayList<Double> norms = new ArrayList<Double>();
+        //ArrayList<Integer> keysize = new ArrayList<Integer>();
+        TreeMap<Double, Integer> norms = new TreeMap<Double, Integer>();
         String plain = "";
         for(int k : KEYSIZE) //Step 3
         {
@@ -69,75 +78,112 @@ public class Challenge6
             byte[] b2 = new byte[k];
             byte[] b3 = new byte[k];
             byte[] b4 = new byte[k];
-            for(int i = 0; i < bytes.length - 4 && i < k; i++) //Step 3a
+            for(int i = 0;  i < k; i++) //Step 3a
             {
                 b1[i] = bytes[i];
-                b2[i] = bytes[(i + 1) % bytes.length];
-                b3[i] = bytes[(i + 2) % bytes.length];
-                b4[i] = bytes[(i + 3) % bytes.length];
             }
+            for(int i = k; i < k * 2; i++)
+                b2[i % b2.length] = bytes[i];
+            for(int i = k * 2; i < k * 3; i++)
+                b3[i % b3.length] = bytes[i];
+            for(int i = k * 3; i < k * 4; i++)
+                b4[i % b4.length] = bytes[i];
             String s1 = convertToBits(b1);
             String s2 = convertToBits(b2);
             String s3 = convertToBits(b3);
             String s4 = convertToBits(b4);
             int h = hammingDistance(s1,s2) + hammingDistance(s2,s3) + hammingDistance(s3,s4);
             double norm = (double)h / (double)(k * 3); //Step 3b
-            if(Double.compare(norm,min) < 0)
-            {
-                min = norm;
-                keys.add(k);
-            }
+            norms.put(norm, k);
         }
         ArrayList<Integer> smallest = new ArrayList<Integer>();
-        for(int i = keys.size() - 5; i < keys.size(); i++)
-            smallest.add(keys.get(i));
-        for(Integer i : smallest) // Step 4
+        Set es = norms.entrySet();
+        Iterator iter = es.iterator();
+        for(int i = 0; i < 5; i++)
         {
-            int blocksize = i;
+            Map.Entry m = (Map.Entry)iter.next();
+            smallest.add((Integer)m.getValue());
+        }
+        for(Integer i : smallest)
+        {
             ArrayList<ArrayList<Byte>> blocks = new ArrayList<ArrayList<Byte>>();
-            for(int j = 0; j < blocksize; j++)
-                blocks.add(j , new ArrayList<Byte>());
-            for(int j = 0; j < bytes.length; j++)
-                blocks.get(j%blocksize).add(bytes[j]);
             String key = "";
-            byte[] b;
-            for(ArrayList<Byte> blockbytes : blocks)
+            for(int j = 0; j < i; j++)
+                blocks.add(j, new ArrayList<Byte>());
+            for(int j = 0; j < bytes.length; j++)
+                blocks.get(j % i).add(bytes[j]);
+            for(int j = 0; j < i; j++)
             {
-                b = new byte[blockbytes.size()];
-                for(int j = 0; j < b.length; j++)
-                    b[j] = blockbytes.get(j);
-                key += breakSingleXOR(b);
+                ArrayList<Byte> b1 = blocks.get(j);
+                byte[] b = new byte[b1.size()];
+                for(int k = 0; k < b.length; k++)
+                    b[k] = b1.get(k);
+                System.out.println(Arrays.toString(b));
+                key += (char)breakSingleXOR(b);
             }
             plain = xor(key,bytes);
-            System.out.println("k = " + key);
-            System.out.println("keysize = " + i);
-            System.out.println("Plaintext: " + plain);
+
+            System.out.println("Key: " + key);
+            System.out.println("Size: " + i);
+            System.out.println("Plain: " + plain);
         }
     }
 
-    public char breakSingleXOR(byte[] b) throws UnsupportedEncodingException {
+    public static int breakSingleXOR(byte[] b) throws UnsupportedEncodingException {
         HexToBase64 encoder = new HexToBase64();
-        String ct = encoder.hexEncode(b);
-        ByteXOR bx = new ByteXOR();
         double maxfreq = 0.0;
         int key = 0;
         for(int i = 1; i < 256; i++)
         {
-            String pt = bx.xor((byte)i,ct);
-            double freq = Challenge3.maxCharFreq(pt,encoder);
+            byte[] b1 = xorSingle((byte)i, b);
+            double freq = maxCharFreq(b1);
             if(Double.compare(freq,maxfreq) > 0)
             {
                 maxfreq = freq;
                 key = i;
             }
         }
-        return (char)key;
+        return key;
     }
     
-    public String xor(String key, byte[] pt) throws UnsupportedEncodingException {
+    public static String xor(String key, byte[] pt) throws UnsupportedEncodingException {
         byte[] k = key.getBytes();
         for(int i = 0; i < pt.length; i++)
             pt[i] = (byte)(pt[i] ^ k[i % k.length]);
         return new String(pt,"ASCII");
+    }
+
+    public static byte[] xorSingle(byte b, byte[] bytes)
+    {
+        for(int i = 0; i < bytes.length; i++)
+            bytes[i] ^= b;
+        return bytes;
+    }
+
+    public static double maxCharFreq(byte[] b)
+    {
+        HashMap<Character, Integer> map = new HashMap<Character, Integer>();
+        for(int i = 0; i < b.length; i++)
+        {
+            char c = (char)b[i];
+            if((c >= 65 && c <= 90) || (c >= 97 && c <= 122))
+            {
+                Integer count = map.get(c);
+                if (count == null)
+                    count = 0;
+                map.put(c, count + 1);
+            }
+        }
+        int max = 0;
+        for(int i = 0; i < b.length; i++)
+        {
+            char c = (char)b[i];
+            if((c >= 65 && c <= 90) || (c >= 97 && c <= 122))
+            {
+                Integer count = map.get(c);
+                max += count;
+            }
+        }
+        return (double)max / (double)b.length;
     }
 }

@@ -1,6 +1,7 @@
 package crypto.cryptopals;
 
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.Base64;
 
 public class HexToBase64
@@ -8,6 +9,14 @@ public class HexToBase64
     private static final byte[] ENCODING = {65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,
     97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,
     48,49,50,51,52,53,54,55,56,57,43,47};
+    private static final int[] DECODING = new int[256];
+    static
+    {
+        Arrays.fill(DECODING, -1);
+        for(int i = 0; i < ENCODING.length; i++)
+            DECODING[ENCODING[i]] = i;
+        DECODING['='] = -2;
+    }
     private static final char[] HEX = "0123456789abcdef".toCharArray();
 
     public static void main(String... args)
@@ -19,56 +28,6 @@ public class HexToBase64
         System.out.println(encoder.encode(new BigInteger("49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d", 16).toByteArray()));
         boolean match = encoder.encode(new BigInteger("49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d", 16).toByteArray()).equals("SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t");
         System.out.println("matches: " + match);
-    }
-
-    /**
-     * From the OpenJDK 9 implementation of Base64
-     * @param src
-     * @return
-     */
-    @SuppressWarnings("deprecation")
-    public String encode2(byte[] src)
-    {
-        int len = 4 * ((src.length + 2) / 3);
-        byte[] dst = new byte[len];
-        int sp = 0;
-        int slen = src.length / 3 * 3;
-        int sl = slen;
-        int dp = 0;
-        while(sp < sl)
-        {
-            int s10 = Math.min(sp+slen, sl);
-            for(int sp0 = sp, dp0 = dp; sp0 < s10;)
-            {
-                int bits = (src[sp0++] & 0xff) << 16 | (src[sp0++] & 0xff) << 8 | (src[sp0++] & 0xff);
-                dst[dp0++] = ENCODING[(bits >>> 18) & 0x3f];
-                dst[dp0++] = ENCODING[(bits >>> 12) & 0x3f];
-                dst[dp0++] = ENCODING[(bits >>> 6) & 0x3f];
-                dst[dp0++] = ENCODING[bits & 0x3f];
-            }
-            int dlen = (s10 - sp) / 3 * 4;
-            dp += dlen;
-            sp = s10;
-        }
-        if(sp < src.length)
-        {
-            int b0 = src[sp++] & 0xff;
-            dst[dp++] = ENCODING[b0 >> 2];
-            if(sp == src.length)
-            {
-                dst[dp++] = ENCODING[(b0 << 4) & 0x3f];
-                dst[dp++] = '=';
-                dst[dp++] = '=';
-            }
-            else
-            {
-                int b1 = src[sp++] & 0xff;
-                dst[dp++] = ENCODING[(b0 << 4) & 0x3f | (b1 >> 4)];
-                dst[dp++] = ENCODING[(b1 << 2) & 0x3f];
-                dst[dp++] = '=';
-            }
-        }
-        return new String(dst,0,0,dst.length);
     }
 
     /**
@@ -120,6 +79,11 @@ public class HexToBase64
             }
         }
         return new String(dst,0,0,dst.length);
+    }
+
+    public byte[] decode(String s)
+    {
+        return Base64.getDecoder().decode(s);
     }
 
     public String hexEncode2(byte[] src)

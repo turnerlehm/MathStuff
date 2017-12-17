@@ -52,6 +52,24 @@ public class ConcatenationPrimes {
 		}
 		out.close();
 	}
+
+	private static void findPrimes2() throws IOException
+	{
+		BufferedWriter out = new BufferedWriter(new FileWriter("D:\\Projects\\COMPUTATIONS\\concat_primes_gen_Integer.MAX_VALUE.txt"));
+		BigInteger N = BigInteger.ZERO;
+		for(int i = 2; i < Integer.MAX_VALUE; i++)
+		{
+			N = new BigInteger(translate(i));
+			if(N.isProbablePrime(100000000))
+			{
+				out.write("n = " + i + ": " + N);
+				out.newLine();
+				out.flush();
+				System.out.println("n = " + i + ": " + N);
+			}
+		}
+		out.close();
+	}
 	
 	private static String translate(int n)
 	{
@@ -63,6 +81,6 @@ public class ConcatenationPrimes {
 	
 	public static void main(String... args) throws IOException
 	{
-		findPrimes();
+		findPrimes2();
 	}
 }
