@@ -4,8 +4,8 @@ import java.util.Arrays;
 
 public class BigInt extends Number implements Comparable<BigInt>
 {
-    private boolean[] mag;
-    private int signum;
+    boolean[] mag;
+    int signum;
     private static final int MAX_LENGTH = Integer.MAX_VALUE / Integer.SIZE + 1;
     static final long LONG_MASK = 0xffffffffL;
     private static long[] bitsPerDigit = {0,0,
@@ -26,6 +26,26 @@ public class BigInt extends Number implements Comparable<BigInt>
             0x40000000, 0x4cfa3cc1, 0x5c13d840, 0x6d91b519, 0x39aa400
     };
 
+    private static BigInt longRadix[] = {null, null,
+            valueOf(0x4000000000000000L), valueOf(0x383d9170b85ff80bL),
+            valueOf(0x4000000000000000L), valueOf(0x6765c793fa10079dL),
+            valueOf(0x41c21cb8e1000000L), valueOf(0x3642798750226111L),
+            valueOf(0x1000000000000000L), valueOf(0x12bf307ae81ffd59L),
+            valueOf( 0xde0b6b3a7640000L), valueOf(0x4d28cb56c33fa539L),
+            valueOf(0x1eca170c00000000L), valueOf(0x780c7372621bd74dL),
+            valueOf(0x1e39a5057d810000L), valueOf(0x5b27ac993df97701L),
+            valueOf(0x1000000000000000L), valueOf(0x27b95e997e21d9f1L),
+            valueOf(0x5da0e1e53c5c8000L), valueOf( 0xb16a458ef403f19L),
+            valueOf(0x16bcc41e90000000L), valueOf(0x2d04b7fdd9c0ef49L),
+            valueOf(0x5658597bcaa24000L), valueOf( 0x6feb266931a75b7L),
+            valueOf( 0xc29e98000000000L), valueOf(0x14adf4b7320334b9L),
+            valueOf(0x226ed36478bfa000L), valueOf(0x383d9170b85ff80bL),
+            valueOf(0x5a3c23e39c000000L), valueOf( 0x4e900abb53e6b71L),
+            valueOf( 0x7600ec618141000L), valueOf( 0xaee5720ee830681L),
+            valueOf(0x1000000000000000L), valueOf(0x172588ad4f5f0981L),
+            valueOf(0x211e44f7d02c1000L), valueOf(0x2ee56725f06e5c71L),
+            valueOf(0x41c21cb8e1000000L)};
+
     private static final int MAX_CONST = 16;
     private static BigInt[] posConst = new BigInt[MAX_CONST + 1];
     private static BigInt[] negConst = new BigInt[MAX_CONST + 1];
@@ -40,13 +60,25 @@ public class BigInt extends Number implements Comparable<BigInt>
     }
 
     public static final BigInt ZERO = new BigInt(new int[0], 0);
+    public static final BigInt ONE = valueOf(1L);
     private static final int SCHOENHAGE_BASE_CONVERSION_THRESHOLD = 640;
+    static final int BZ_THRESHOLD = 2560;
 
     BigInt(int[] mag, int i)
     {
         this.signum = mag.length == 0 ? 0 : i;
         this.mag = translate(mag);
-        this.mag = addOne(this.mag);
+        //this.mag = mag.length == 0 ? this.mag : addOne(this.mag);
+        this.mag = stripLeadingZeroBits(this.mag, 0, this.mag.length);
+        if(this.mag.length >= MAX_LENGTH)
+            checkRange();
+    }
+
+    BigInt(boolean[] mag, int sign)
+    {
+        this.signum = mag.length == 0 ? 0 : sign;
+        this.mag = mag;
+        //this.mag = mag.length == 0 ? this.mag : addOne(this.mag);
         this.mag = stripLeadingZeroBits(this.mag, 0, this.mag.length);
         if(this.mag.length >= MAX_LENGTH)
             checkRange();
@@ -54,27 +86,8 @@ public class BigInt extends Number implements Comparable<BigInt>
 
     private BigInt(long val)
     {
-        if(val < 0)
-        {
-            val = -val;
-            signum = -1;
-        }
-        else
-            signum = 1;
-        int hword = (int)(val >>> 32);
-        int[] tmag = new int[2];
-        if(hword == 0)
-        {
-            tmag = new int[1];
-            tmag[0] = (int)val;
-        }
-        else
-        {
-            tmag[0] = hword;
-            tmag[1] = (int)val;
-        }
-        this.mag = translate(tmag);
-        this.mag = addOne(this.mag);
+        this.mag = translateLong(val);
+        //this.mag = addOne(this.mag);
         this.mag = stripLeadingZeroBits(this.mag, 0, this.mag.length);
         if(this.mag.length >= MAX_LENGTH)
             checkRange();
@@ -241,7 +254,7 @@ public class BigInt extends Number implements Comparable<BigInt>
         }
         mag = trustedStripLeadingZeroInts(mag);
         this.mag = translate(mag);
-        this.mag = addOne(this.mag);
+        //this.mag = addOne(this.mag);
         this.mag = stripLeadingZeroBits(this.mag, 0, this.mag.length);
         if(this.mag.length >= MAX_LENGTH)
             checkRange();
@@ -377,7 +390,7 @@ public class BigInt extends Number implements Comparable<BigInt>
         {
             res[i] = !val[b--];
         }
-        res = addOne(res);
+        //res = addOne(res);
         return res;
     }
 
@@ -394,12 +407,74 @@ public class BigInt extends Number implements Comparable<BigInt>
         for(int i = one.length - 1; i > 0; i--)
         {
             carry = b[i] && one[i];
-            b[i] ^= one[i];
+            b[i] = (b[i] || one[i]) && !(b[i] && one[i]); //definition of XOR
             one[i - 1] = carry;
         }
         if(carry)
-            b[0] ^= carry;
+            b[0] = (b[0] || carry) && !(b[0] && carry);
         return b;
+    }
+
+    public String toString(int radix)
+    {
+        if(signum == 0)
+            return "0";
+        if(radix < Character.MIN_RADIX || radix > Character.MAX_RADIX)
+            radix = 10;
+        if(mag.length < SCHOENHAGE_BASE_CONVERSION_THRESHOLD)
+            return smallToString(radix);
+        return "";
+    }
+
+    public String toStringCheat()
+    {
+        return "";
+    }
+
+    private String smallToString(int radix)
+    {
+        if(signum == 0)
+            return "0";
+        int maxNumDigits = (4* mag.length + 6) / 7;
+        String[] digitGroup = new String[maxNumDigits];
+        BigInt temp = this.abs();
+        int numGroups = 0;
+        while(temp.signum != 0)
+        {
+
+        }
+        return "";
+    }
+
+    public BigInt negate()
+    {
+        return new BigInt(this.mag, -this.signum);
+    }
+
+    public BigInt abs()
+    {
+        return signum >= 0 ? this : this.negate();
+    }
+
+
+    final int compareMagnitude(BigInt val)
+    {
+        boolean[] m1 = mag;
+        int len1 = m1.length;
+        boolean[] m2 = val.mag;
+        int len2 = m2.length;
+        if(len1 < len2)
+            return -1;
+        if(len1 > len2)
+            return 1;
+        for(int i = 0; i < len1; i++)
+        {
+            boolean a = m1[i];
+            boolean b = m2[i];
+            if(a != b)
+                return !a ? -1 : 1;
+        }
+        return 0;
     }
 
     @Override
@@ -408,13 +483,21 @@ public class BigInt extends Number implements Comparable<BigInt>
     }
 
     @Override
-    public int intValue() {
-        return 0;
+    public int intValue()
+    {
+        int n = 0;
+        for(int i = 0; i < mag.length && i < 32; i++)
+            n = (n << 1) + (mag[i] ? 1 : 0);
+        return n;
     }
 
     @Override
-    public long longValue() {
-        return 0;
+    public long longValue()
+    {
+        long n = 0;
+        for(int i = 0; i < mag.length && i < 64; i++)
+            n = (n << 1) + (mag[i] ? 1 : 0);
+        return n;
     }
 
     @Override
@@ -435,7 +518,7 @@ public class BigInt extends Number implements Comparable<BigInt>
         System.out.println(Arrays.toString(b1));
         //boolean[] b2 = BigInt.makePositive(b1, 0, b1.length);
         //System.out.println(Arrays.toString(b2));
-        BigInt N = new BigInt("123456789123456789123456789123456789");
+        BigInt N = new BigInt("123456789123456789123456789123456789123456789123456789123456789123456789");
         System.out.println("Hello");
     }
 }

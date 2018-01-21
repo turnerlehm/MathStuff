@@ -1,5 +1,6 @@
 package crypto;
 
-public abstract class PrimitiveReverser {
+public abstract class PrimitiveReverser
+{
 
 }
