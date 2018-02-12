@@ -39,6 +39,7 @@ public class ConcatenationPrimes {
 		int[] primes = generateSieve(100000000);
 		BufferedWriter out = new BufferedWriter(new FileWriter("D:\\Projects\\COMPUTATIONS\\concat_primes_100000000.txt"));
 		BigInteger N = BigInteger.ZERO;
+		int count = 0;
 		for(int p : primes)
 		{
 			N = new BigInteger(translate(p));
@@ -47,9 +48,13 @@ public class ConcatenationPrimes {
 				out.write("p = " + p + ": " + N);
 				out.flush();
 				out.newLine();
+				out.flush();
+				count++;
 				System.out.println("p = " + p + ": " + N);
 			}
 		}
+		System.out.println("Total: " + count);
+		out.write("Total: " + count);
 		out.close();
 	}
 
@@ -81,6 +86,6 @@ public class ConcatenationPrimes {
 	
 	public static void main(String... args) throws IOException
 	{
-		findPrimes2();
+		findPrimes();
 	}
 }

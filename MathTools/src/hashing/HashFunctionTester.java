@@ -12,6 +12,12 @@ public class HashFunctionTester
 	static BigInteger p1 = combos.nextProbablePrime();
 	static BigInteger p2 = BigInteger.valueOf(Integer.MAX_VALUE).nextProbablePrime();
 	static Random rng = new SecureRandom();
+	static int[] table = new int[128];
+	static
+    {
+        for(int i = 0; i < table.length; i++)
+            table[i] = rng.nextInt();
+    }
 	public HashFunctionTester() 
 	{
 		// TODO Auto-generated constructor stub
@@ -78,6 +84,60 @@ public class HashFunctionTester
         int h = 0;
         for(byte b : key)
             h ^= (h << 5) ^ (h >> 2) ^ b;
+        return h & Integer.MAX_VALUE;
+    }
+
+    public static int fnv(byte[] key)
+    {
+        long h = 2166136261L;
+        for(byte b : key)
+            h = (h * 16777619) ^ b;
+        return ((int)h)&Integer.MAX_VALUE;
+    }
+
+    public static int oat(byte[] key)
+    {
+        int h = 0;
+        for(byte b : key)
+        {
+            h += b;
+            h += (h << 10);
+            h ^= (h >> 6);
+        }
+        h += (h << 3);
+        h ^= (h >> 11);
+        h += (h << 15);
+        return h & Integer.MAX_VALUE;
+    }
+
+    public static int jsw(byte[] key)
+    {
+        int h = 16777551;
+        for(byte b : key)
+            h = ((h << 1) | (h >> 31)) ^ table[b];
+        return h & Integer.MAX_VALUE;
+    }
+
+    public static int elf(byte[] key)
+    {
+        int h = 0;
+        long g;
+        for(byte b : key)
+        {
+            h = (h << 4) + b;
+            g = h & 0xF0000000L;
+            if(g != 0)
+                h ^= g >> 24;
+            h &= ~g;
+        }
+        return h & Integer.MAX_VALUE;
+    }
+
+    public static int linear1(byte[] key)
+    {
+        int h = 0;
+        for(byte b : key)
+            h ^= 1778502657 * b ^ 1510417151 + b;
         return h & Integer.MAX_VALUE;
     }
 
@@ -301,6 +361,34 @@ public class HashFunctionTester
         for(String s : students)
         {
             int idx = HashFunctionTester.sax3(s.getBytes()) % map.length;
+            map[idx]++;
+        }
+        System.out.println(Arrays.toString(map));
+        Arrays.fill(map, 0);
+        for(String s : students)
+        {
+            int idx = HashFunctionTester.fnv(s.getBytes()) % map.length;
+            map[idx]++;
+        }
+        System.out.println(Arrays.toString(map));
+        Arrays.fill(map, 0);
+        for(String s : students)
+        {
+            int idx = HashFunctionTester.oat(s.getBytes()) % map.length;
+            map[idx]++;
+        }
+        System.out.println(Arrays.toString(map));
+        Arrays.fill(map, 0);
+        for(String s : students)
+        {
+            int idx = HashFunctionTester.jsw(s.getBytes()) % map.length;
+            map[idx]++;
+        }
+        System.out.println(Arrays.toString(map));
+        Arrays.fill(map, 0);
+        for(String s : students)
+        {
+            int idx = HashFunctionTester.elf(s.getBytes()) % map.length;
             map[idx]++;
         }
         System.out.println(Arrays.toString(map));
